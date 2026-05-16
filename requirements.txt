@@ -1,0 +1,8 @@
+SpeechRecognition
+pyttsx3
+PyAudio
+colorama
+google-genai
+python-dotenv
+groq
+requests
