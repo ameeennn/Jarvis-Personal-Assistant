@@ -27,8 +27,8 @@ A high-performance, local-first personal assistant with a "Multi-Brain" AI fallb
 
 ### 2. Installation
 ```bash
-git clone https://github.com/yourusername/jarvis-ai.git
-cd jarvis-ai
+git clone https://github.com/ameeennn/Jarvis-Personal-Assistant.git
+cd Jarvis-Personal-Assistant
 pip install -r requirements.txt
 ```
 
