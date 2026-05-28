@@ -4,6 +4,7 @@ from google import genai
 from groq import Groq
 from dotenv import load_dotenv
 from colorama import Fore
+from duckduckgo_search import DDGS
 
 load_dotenv()
 
@@ -11,7 +12,22 @@ class AIEngine:
     def __init__(self):
         self.providers = []
         self.current_provider_index = 0
+        self.history = [] # New: Session memory for multi-turn chat
+        self.max_history = 10 # Keep last 10 messages
         
+        # 0. Initialize Local Ollama (Primary for unlimited/private use)
+        try:
+            # Check if Ollama is running locally
+            response = requests.get("http://localhost:11434/api/tags", timeout=2)
+            if response.status_code == 200:
+                self.providers.append({
+                    "name": "Local-Ollama",
+                    "models": ["llama3.2:1b", "phi3", "llama3:8b"],
+                    "type": "ollama"
+                })
+        except:
+            print(f"{Fore.YELLOW}Local Ollama not detected. Using Cloud APIs.")
+
         # 1. Initialize Gemini
         gemini_key = os.getenv("GEMINI_API_KEY")
         if gemini_key:
@@ -67,9 +83,28 @@ class AIEngine:
                 "type": "hf"
             })
 
-    def get_response(self, prompt):
+    def search_web(self, query):
+        """Fetches live search results from the web."""
+        try:
+            print(f"{Fore.YELLOW}Searching the web for: {query}...")
+            with DDGS() as ddgs:
+                results = [r['body'] for r in ddgs.text(query, max_results=3)]
+                return "\n".join(results)
+        except Exception as e:
+            print(f"Search failed: {e}")
+            return "Search unavailable."
+
+    def get_response(self, prompt, context=None):
         if not self.providers:
             return "No AI providers configured. Please check your .env file."
+        
+        # Build a full prompt for Cloud APIs (Ollama uses internal history)
+        history_text = "\n".join([f"{msg['role'].upper()}: {msg['content']}" for msg in self.history])
+        
+        cloud_prompt = f"Previous conversation:\n{history_text}\n\n"
+        if context:
+            cloud_prompt += f"Context (Real-time data):\n{context}\n\n"
+        cloud_prompt += f"USER: {prompt}\nASSISTANT:"
 
         # Outer loop: Try different providers
         for p_attempt in range(len(self.providers)):
@@ -79,8 +114,18 @@ class AIEngine:
             for model_name in provider["models"]:
                 try:
                     print(f"{Fore.CYAN}Trying {provider['name']} with model {model_name}...")
-                    response = self._call_provider(provider, model_name, prompt)
+                    
+                    # Decide which prompt to use
+                    final_prompt = prompt if provider["type"] == "ollama" else cloud_prompt
+                    
+                    response = self._call_provider(provider, model_name, final_prompt)
                     if response:
+                        # 3. Store in history
+                        self.history.append({"role": "user", "content": prompt})
+                        self.history.append({"role": "assistant", "content": response})
+                        if len(self.history) > self.max_history * 2:
+                            self.history = self.history[-self.max_history * 2:]
+                        
                         return response
                 except Exception as e:
                     print(f"{Fore.RED}{provider['name']} model {model_name} failed: {e}")
@@ -93,7 +138,20 @@ class AIEngine:
         return "All AI providers and models failed. Please check your internet or API keys."
 
     def _call_provider(self, provider, model, prompt):
-        if provider["type"] == "gemini":
+        if provider["type"] == "ollama":
+            # Use Chat API for better history handling
+            messages = [{"role": m["role"], "content": m["content"]} for m in self.history]
+            messages.append({"role": "user", "content": prompt})
+            
+            response = requests.post(
+                url="http://localhost:11434/api/chat",
+                json={"model": model, "messages": messages, "stream": False}
+            )
+            if response.status_code == 200:
+                return response.json()['message']['content']
+            raise Exception(f"Ollama Error: {response.status_code}")
+
+        elif provider["type"] == "gemini":
             response = provider["client"].models.generate_content(model=model, contents=prompt)
             return response.text
 

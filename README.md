@@ -6,20 +6,24 @@ A high-performance, local-first personal assistant with a "Multi-Brain" AI fallb
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![AI-Powered](https://img.shields.io/badge/AI-Multi--Provider-orange)
 
-## 🌟 Key Features
+## 🌟 Key Features (v2.0 Update!)
 
 - **🎙️ Advanced Voice Control**: High-sensitivity wake word detection with "No-Flicker" mic technology.
-- **🔄 Smart AI Fallback**: Automatic switching between **Gemini, Groq, OpenRouter, and HuggingFace**. If one hits a limit, Jarvis hops to the next brain!
+- **🗣️ Robust Speech Engine**: Direct SAPI5 integration using `win32com` prevents freezing and ensures 100% reliable text-to-speech without deadlocks.
+- **🔇 Auto-Mute Feedback Prevention**: Jarvis automatically pauses microphone input while speaking to prevent echoing its own voice.
+- **✨ ChatGPT-Style UI**: Text output features a smooth typewriter effect, while microphone inputs show dynamic `Listening...` and `Processing...` indicators just like Google Assistant.
+- **🔄 Smart AI Fallback**: Automatic switching between **Gemini, Groq, OpenRouter, and HuggingFace**.
 - **📦 Universal App Support**: Automatically scans your Windows Start Menu to open any installed app.
-- **💬 Conversational Follow-up**: Jarvis stays awake for 8 seconds after a command for natural follow-up questions.
+- **💬 Conversational Follow-up**: Jarvis stays awake for 10 seconds after a command for natural follow-up questions.
 - **🛡️ Local-First Architecture**: App opening, system info, and web searches happen instantly without AI latency.
-- **⌨️ Manual Mode**: Press 'M' to type commands if you're in a quiet environment.
+- **⌨️ Manual Mode**: Press 'M' to type commands if you're in a quiet environment, or 'S' to quickly toggle voice output.
 
 ## 🚀 Getting Started
 
 ### 1. Prerequisites
 - Python 3.8 or higher.
 - A microphone (built-in or USB).
+- Windows OS (Required for SAPI5 TTS and Windows App scanning).
 
 ### 2. Installation
 ```bash
@@ -51,13 +55,14 @@ python main.py
 
 ## 🛠️ Usage Commands
 
-- **Wake Words**: *"Jarvis"*, *"Hi Jarvis"*, *"Hello"*
+- **Wake Words**: *"Jarvis"*, *"Hey Jarvis"*, *"Hi Jarvis"*
+- **Voice Toggles**: *"Mute"*, *"Go silent"*, *"Speak"*, *"Unmute"*
 - **Apps**: *"Open Chrome"*, *"Open Calculator"*, *"Close Notepad"*
 - **System**: *"What time is it?"*, *"What's today's date?"*
-- **Search**: *"Search for best Python libraries on Google"*
+- **Search**: *"Open search [query]"* or *"Research [topic]"*
 - **AI**: *"Who is the Prime Minister of India?"*, *"Explain Quantum Physics like I'm five."*
-- **Standby**: *"Bye Jarvis"*, *"Go to sleep"*
-- **Shutdown**: *"Shutdown Jarvis"*
+- **Standby**: *"Bye Jarvis"*, *"Bye"*
+- **Shutdown**: *"Shutdown Jarvis"*, *"Shutdown"*
 
 ## 📂 Project Structure
 
